@@ -1,0 +1,13 @@
+.title{
+    font-size: 10px;
+    font-weight: bold;
+    color: blueviolet;
+
+    margin-top: 1px;
+    margin-top: 1px;
+}
+
+.title__icon{
+    display: flex;
+    justify-content: center;
+}

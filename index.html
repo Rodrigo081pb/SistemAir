@@ -1,11 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="/css/menu.css">
+<link rel="stylesheet" href="/css/title.css">
+<link rel="stylesheet" href="/css/button.css">
+<title>Menu de Voo</title>
 </head>
 <body>
-    <script src="/js/index.js"></script>
+
+
+<div class="container"> 
+    <div class="fields">
+
+        <div class="title__icon">
+            <div class="title">
+                <h1>Menu de Voo</h1>
+            </div> 
+        </div>
+        
+        <div id="output"></div>
+
+        <div class="buttons">
+            <button id="button_ref" onclick="exibirVoosDisponiveis()" style="--color:#1e9bff;">
+                <span class="name">Exibir voos disponíveis</span>
+            </butto>
+            <button id="button_ref" onclick="verificarAltitudes()" style="--color:#1e9bff;">
+                <span class="name">Verificar altitudes livres</span>
+            </button>
+            <button id="button_ref" onclick="submeterPlanoVoo()" style="--color:#1e9bff;">
+                <span class="name">Submeter Plano de Voo</span>
+            </button>
+            <button id="button_ref" onclick="listarPlanosPorNumero()" style="--color:#1e9bff;">
+                <span class="name">Listar Plano de Voo por Número</span>
+            </button>
+            <button id="button_ref" onclick="listarPlanosPorData()" style="--color:#1e9bff;">
+                <span class="name">Listar Planos de Voo para uma determinada Data</span>
+            </button>
+            <button id="button_ref" onclick="listarOcupacaoAerovia()" style="--color:#1e9bff;">
+                <span class="name">Listar Ocupação de uma Aerovia em uma determinada Data</span>
+            </button>
+            <button id="button_ref" onclick="cancelarPlanoVoo()" style="--color:#1e9bff;">
+                <span class="name">Cancelar Plano de Voo</span>
+            </button>
+        </div>
+    </div> 
+</div>
+<script src="/js/menu.js"></script>
 </body>
 </html>
