@@ -1,219 +1,301 @@
 const readline = require("readline");
 
-// Definição da classe Voo
-class Voo {
-  constructor(origem, destino, horario, numero) {
-    this.origem = origem;
-    this.destino = destino;
-    this.horario = horario;
-    this.numero = numero;
-  }
-
-  // Método para exibir detalhes do voo
-  exibirDetalhes() {
-    console.log(
-      `Voo ${this.numero}: de ${this.origem} para ${this.destino}, horário: ${this.horario}`
-    );
-  }
-}
-
-// Função para embaralhar um array (utilizada para exibir dados aleatórios)
-function shuffle(array) {
-  let currentIndex = array.length,
-    temporaryValue,
-    randomIndex;
-
-  // Enquanto ainda existirem elementos para embaralhar
-  while (0 !== currentIndex) {
-    // Seleciona um elemento aleatório restante
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // E troca com o elemento atual
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
-}
-
-// Criando alguns voos disponíveis
-const voosDisponiveis = [
-  new Voo("São Paulo", "Rio de Janeiro", "08:00", "SPRIO123"),
-  new Voo("Brasília", "Salvador", "10:30", "BRASAL456"),
-  new Voo("Fortaleza", "Recife", "15:45", "FORREC789"),
-  new Voo("Belém", "Manaus", "12:00", "BELEMAO321"),
-  new Voo("Porto Alegre", "Curitiba", "18:30", "POACWB654"),
-  new Voo("Goiânia", "Cuiabá", "09:15", "GOICGB987"),
-  new Voo("Florianópolis", "Porto Seguro", "14:20", "FLNPSG654"),
-  new Voo("Natal", "Maceió", "11:45", "NTLMAC321"),
-  new Voo("Vitória", "Campo Grande", "16:00", "VITCGR789"),
-  new Voo("Palmas", "São Luís", "19:30", "PMASLZ987"),
-  new Voo("Recife", "Miami", "09:00", "RECMIAMI123"),
-  new Voo("Miami", "Orlando", "12:30", "MIAORL456"),
-  new Voo("Recife", "Orlando", "14:45", "RECORL789"),
-];
-
-// Criando a interface readline
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-// Função para exibir voos disponíveis
-function exibirVoosDisponiveis() {
-  console.log("Voos Disponíveis:");
-  voosDisponiveis.forEach((voo) => voo.exibirDetalhes());
-  showMenu(); // Exibe o menu novamente
+// Definir arrays para armazenar pilotos, aeronaves e voos
+const pilotos = [
+  { id: 1, nome: "Piloto 1", habilitado: true },
+  { id: 2, nome: "Piloto 2", habilitado: false },
+];
+
+const aeronaves = [
+  { modelo: "Aeronave1", tipo: "Comercial", autonomia: 1000 },
+  { modelo: "Aeronave2", tipo: "Particular", autonomia: 1200 },
+];
+
+const voosDisponiveis = [
+  { origem: "São Paulo", destino: "Rio de Janeiro", horario: "08:00" },
+  { origem: "Rio de Janeiro", destino: "Brasília", horario: "10:00" },
+];
+
+const voosAprovados = [];
+const voosCancelados = [];
+
+// Objeto para armazenar as altitudes ocupadas por aerovia e horário
+const altitudesOcupadasPorAerovia = {};
+
+// Função para exibir o menu de opções
+function showMenu() {
+  console.log("\nEscolha uma opção:");
+  console.log("1. Listar Voos Disponíveis");
+  console.log(
+    "2. Verificar Altitudes Livres em uma Aerovia em um Determinado Horário"
+  );
+  console.log("3. Submeter Plano de Voo");
+  console.log("4. Listar Plano de Voo por Número");
+  console.log("5. Listar Planos de Voo para uma determinada Data");
+  console.log("6. Listar Ocupação de uma Aerovia em uma determinada Data");
+  console.log("7. Cancelar Plano de Voo");
+  console.log("8. Encerrar o Sistema");
+  rl.question("Opção: ", handleChoice);
 }
 
-// Função para verificar altitudes livres
-function altitudesLivres(horario) {
-  const altitudesOcupadas = ["FL300", "FL320", "FL340"]; // altitudes ocupadas
-  const altitudesDisponiveis = ["FL290", "FL310", "FL330", "FL350"]; // altitudes disponíveis
+// Função para verificar a autonomia da aeronave para o trecho
+function verificarAutonomiaAeronave(aeronave, aerovia) {
+  // Encontrar o tamanho da aerovia (apenas para exemplo, substitua por valores reais)
+  let tamanhoAerovia;
+  switch (aerovia) {
+    case "São Paulo - Rio de Janeiro":
+      tamanhoAerovia = 400; // Exemplo: tamanho da aerovia em quilômetros
+      break;
+    case "Rio de Janeiro - Brasília":
+      tamanhoAerovia = 800; // Exemplo: tamanho da aerovia em quilômetros
+      break;
+    default:
+      console.log("Aerovia não encontrada.");
+      return false;
+  }
 
-  // Filtrar altitudes disponíveis
-  const altitudesLivres = altitudesDisponiveis.filter(
+  // Verificar se a autonomia da aeronave é 10% maior que o tamanho da aerovia
+  const autonomiaNecessaria = tamanhoAerovia * 1.1;
+  if (aeronave.autonomia >= autonomiaNecessaria) {
+    console.log("Autonomia da aeronave é suficiente para o trecho.");
+    return true;
+  } else {
+    console.log("Erro: Autonomia da aeronave não é suficiente para o trecho.");
+    return false;
+  }
+}
+
+// Função para verificar a compatibilidade da altitude com o tipo de aeronave
+function verificarCompatibilidadeAltitude(altitude, tipoAeronave) {
+  // Definir regras de compatibilidade de altitude para cada tipo de aeronave
+  switch (tipoAeronave) {
+    case "Comercial":
+      // Altitudes compatíveis com aeronaves comerciais
+      const altitudesComerciais = ["FL290", "FL310", "FL330", "FL350"];
+      if (altitudesComerciais.includes(altitude)) {
+        console.log("Altitude compatível com o tipo de aeronave comercial.");
+        return true;
+      } else {
+        console.log(
+          "Erro: Altitude não é compatível com o tipo de aeronave comercial."
+        );
+        return false;
+      }
+    case "Particular":
+      // Altitudes compatíveis com aeronaves particulares
+      const altitudesParticulares = ["FL200", "FL220", "FL240", "FL260"];
+      if (altitudesParticulares.includes(altitude)) {
+        console.log("Altitude compatível com o tipo de aeronave particular.");
+        return true;
+      } else {
+        console.log(
+          "Erro: Altitude não é compatível com o tipo de aeronave particular."
+        );
+        return false;
+      }
+    default:
+      console.log("Erro: Tipo de aeronave não reconhecido.");
+      return false;
+  }
+}
+
+function altitudesLivres(aerovia, horario) {
+  console.log(`Altitudes livres na aerovia ${aerovia} no horário ${horario}:`);
+
+  // Verifica se a aerovia e o horário estão no mapa de altitudes ocupadas
+  if (
+    !(aerovia in altitudesOcupadasPorAerovia) ||
+    !(horario in altitudesOcupadasPorAerovia[aerovia])
+  ) {
+    console.log("Não há informações sobre esta aerovia ou horário.");
+    showMenu(); // Exibe o menu novamente
+    return;
+  }
+
+  const altitudesOcupadas = altitudesOcupadasPorAerovia[aerovia][horario];
+
+  const altitudesPossiveis = [];
+  for (let altitude = 200; altitude <= 400; altitude += 10) {
+    altitudesPossiveis.push(`FL${altitude}`);
+  }
+
+  // Filtra as altitudes possíveis para encontrar as livres
+  const altitudesLivres = altitudesPossiveis.filter(
     (altitude) => !altitudesOcupadas.includes(altitude)
   );
 
-  // Exibir altitudes disponíveis
-  console.log(`Altitudes livres em ${horario}:`);
-  altitudesLivres.forEach((altitude) => console.log(altitude));
+  if (altitudesLivres.length > 0) {
+    console.log("Altitudes livres:");
+    altitudesLivres.forEach((altitude) => console.log(altitude));
+  } else {
+    console.log("Todas as altitudes estão ocupadas neste horário.");
+  }
+
   showMenu(); // Exibe o menu novamente
 }
 
-// Função submeter o Plano de Voo
-function submeterPlanoVoo(planoVoo) {
-  console.log("Submetendo Plano de Voo...");
-  console.log("Plano de Voo submetido com sucesso!");
-  showMenu(); // Exibe o menu novamente
+// Função para exibir detalhes de um voo
+function exibirDetalhesVoo(voo) {
+  console.log(
+    `Origem: ${voo.origem} - Destino: ${voo.destino} - Horário: ${voo.horario}`
+  );
 }
 
-// Função listar planos de voo por número
-function listarPlanosPorNumero() {
-  console.log("Listagem de Plano de Voo por Número:");
-  voosDisponiveis.forEach((voo) => console.log(`Número do Voo: ${voo.numero}`));
-  showMenu(); // Exibe o menu novamente
-}
+function verificarOcupacaoAeroviaData(aerovia, data) {
+  console.log(`Ocupação da aerovia ${aerovia} na data ${data}:`);
 
-// Função listar planos de voo para uma determinada data
-function listarPlanosPorData(data) {
-  console.log(`Listagem de Planos de Voo para a data: ${data}`);
-  // Simulação de dados de Planos de Voo para a data
-  const planosVoo = [
-    {
-      numero: "NYLAX123",
-      origem: "Nova York",
-      destino: "Los Angeles",
-      horario: "08:00",
-    },
-    {
-      numero: "PARLON456",
-      origem: "Paris",
-      destino: "Londres",
-      horario: "10:30",
-    },
-    {
-      numero: "TOKSYD789",
-      origem: "Tóquio",
-      destino: "Sydney",
-      horario: "15:45",
-    },
-    {
-      numero: "LAXSYD321",
-      origem: "Los Angeles",
-      destino: "Sydney",
-      horario: "12:00",
-    },
-    {
-      numero: "SYDNYC654",
-      origem: "Sydney",
-      destino: "Nova York",
-      horario: "18:30",
-    },
-  ];
-  // 5 planos de voo aleatórios
-  shuffle(planosVoo)
-    .slice(0, Math.floor(Math.random() * 5) + 1)
-    .forEach((voo, index) =>
+  const voosNaAeroviaNaData = voosAprovados.filter((voo) => {
+    return voo.aerovia === aerovia && voo.data === data;
+  });
+
+  if (voosNaAeroviaNaData.length > 0) {
+    console.log("Voos ocupando esta aerovia nesta data:");
+    voosNaAeroviaNaData.forEach((voo) => {
       console.log(
-        `${index + 1}. Número: ${voo.numero}, Origem: ${voo.origem}, Destino: ${
-          voo.destino
-        }, Horário: ${voo.horario}`
-      )
-    );
+        `Origem: ${voo.origem}, Destino: ${voo.destino}, Horário: ${voo.horario}`
+      );
+    });
+  } else {
+    console.log("Nenhum voo ocupando esta aerovia nesta data.");
+  }
+
   showMenu(); // Exibe o menu novamente
 }
 
-// Função listar ocupação de uma aerovia em data
-function listarOcupacaoAerovia(data) {
-  console.log(`Listagem de Ocupação de uma Aerovia para a data: ${data}`);
-  // Simulação de dados de ocupação da aerovia para a data especificada
-  const ocupacaoAerovia = [
-    { altitude: "FL290", ocupacao: "Baixa" },
-    { altitude: "FL310", ocupacao: "Média" },
-  ];
-  // Exibir 5 ocupações de aerovia aleatórias
-  shuffle(ocupacaoAerovia)
-    .slice(0, 5)
-    .forEach((ocupacao, index) =>
-      console.log(
-        `${index + 1}. Altitude: ${ocupacao.altitude}, Ocupação: ${
-          ocupacao.ocupacao
-        }`
-      )
-    );
+// Função para cancelar um plano de voo
+function cancelarPlano(numeroPlano) {
+  const index = voosAprovados.findIndex((voo) => voo.numero === numeroPlano);
+  if (index !== -1) {
+    const planoCancelado = voosAprovados.splice(index, 1)[0];
+    voosCancelados.push(planoCancelado);
+    console.log(`Plano de Voo ${numeroPlano} cancelado com sucesso.`);
+  } else {
+    console.log(`Plano de Voo ${numeroPlano} não encontrado.`);
+  }
   showMenu(); // Exibe o menu novamente
 }
 
-// Função cancelar o Plano de Voo
-function cancelarPlanoVoo(numeroVoo) {
-  console.log(`Cancelando Plano de Voo para o número: ${numeroVoo}`);
-  // Aqui você pode adicionar a lógica para cancelar o Plano de Voo com o número especificado
-  showMenu(); // Exibe o menu novamente
+function listarPlanoPorNumero() {
+  rl.question(
+    "Digite os primeiros 5 dígitos do Plano de Voo: ",
+    (primeirosCincoDigitos) => {
+      if (primeirosCincoDigitos.length < 5) {
+        console.log(
+          "Os primeiros 5 dígitos do Plano de Voo devem ter no mínimo 5 dígitos."
+        );
+        listarPlanoPorNumero();
+        return;
+      }
+
+      const planos = voosAprovados.filter((voo) =>
+        voo.numero.startsWith(primeirosCincoDigitos)
+      );
+      if (planos.length > 0) {
+        console.log(
+          `Planos de Voo com os primeiros 5 dígitos ${primeirosCincoDigitos}:`
+        );
+        planos.forEach((plano) => {
+          console.log(`Número: ${plano.numero}`);
+          console.log(`Origem: ${plano.origem}`);
+          console.log(`Destino: ${plano.destino}`);
+          console.log(`Horário: ${plano.horario}`);
+          console.log(`Aerovia: ${plano.aerovia}`);
+          console.log(`Altitude: ${plano.altitude}`);
+          console.log(`Piloto: ${plano.piloto.nome}`);
+          console.log(`Modelo da Aeronave: ${plano.aeronave.modelo}`);
+          console.log("-----------------------------------------");
+        });
+      } else {
+        console.log(
+          `Nenhum Plano de Voo encontrado com os primeiros 5 dígitos ${primeirosCincoDigitos}.`
+        );
+      }
+      showMenu(); // Exibe o menu novamente
+    }
+  );
 }
 
-// Função escolha do usuário
+// Função para lidar com a escolha do usuário
 function handleChoice(choice) {
   switch (choice) {
     case "1":
-      exibirVoosDisponiveis();
+      console.log("\nVoos Disponíveis:");
+      voosDisponiveis.forEach(exibirDetalhesVoo);
+      showMenu();
       break;
     case "2":
-      rl.question("Digite o horário desejado (formato HH:MM):", (horario) => {
-        altitudesLivres(horario);
+      console.log(
+        "\nVerificar Altitudes Livres em uma Aerovia em um Determinado Horário:"
+      );
+      rl.question("Digite a aerovia: ", (aerovia) => {
+        rl.question("Digite o horário (formato HH:MM): ", (horario) => {
+          altitudesLivres(aerovia, horario);
+        });
       });
       break;
     case "3":
-      const planoVoo = {}; // Aqui você poderia criar um objeto com os detalhes do Plano de Voo
-      submeterPlanoVoo(planoVoo);
+      console.log("\nSubmeter Plano de Voo:");
+      rl.question("Origem: ", (origem) => {
+        rl.question("Destino: ", (destino) => {
+          rl.question("Horário (formato HH:MM): ", (horario) => {
+            rl.question("Aerovia: ", (aerovia) => {
+              rl.question("Altitude: ", (altitude) => {
+                rl.question("ID do Piloto: ", (pilotoId) => {
+                  rl.question("Modelo da Aeronave: ", (modeloAeronave) => {
+                    const piloto = pilotos.find(
+                      (p) => p.id === parseInt(pilotoId)
+                    );
+                    const aeronave = aeronaves.find(
+                      (a) => a.modelo === modeloAeronave
+                    );
+                    if (piloto && aeronave) {
+                      submeterPlanoVoo(
+                        origem,
+                        destino,
+                        horario,
+                        aerovia,
+                        altitude,
+                        piloto,
+                        aeronave
+                      );
+                    } else {
+                      console.log("Piloto ou aeronave não encontrados.");
+                      showMenu();
+                    }
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
       break;
     case "4":
-      listarPlanosPorNumero();
+      listarPlanoPorNumero();
       break;
     case "5":
-      rl.question(
-        "Digite a data desejada para o Voo (formato DD/MM/AAAA):",
-        (dataPlanos) => {
-          listarPlanosPorData(dataPlanos);
-        }
-      );
+      rl.question("Digite a data (formato DD/MM/AAAA): ", (data) => {
+        listarPlanosPorData(data);
+      });
       break;
     case "6":
-      rl.question(
-        "Digite a data desejada para listar a ocupação da Aerovia (formato DD/MM/AAAA):",
-        (dataOcupacao) => {
-          listarOcupacaoAerovia(dataOcupacao);
-        }
-      );
+      console.log("Listar Ocupação de uma Aerovia em uma determinada Data:");
+      rl.question("Digite a aerovia: ", (aerovia) => {
+        rl.question("Digite a data (formato DD/MM/AAAA): ", (data) => {
+          verificarOcupacaoAeroviaData(aerovia, data);
+        });
+      });
       break;
     case "7":
       rl.question(
-        "Digite o número do Voo que deseja cancelar:",
-        (numeroVooCancelar) => {
-          cancelarPlanoVoo(numeroVooCancelar);
+        "Digite o número do Plano de Voo a ser cancelado: ",
+        (numeroPlano) => {
+          cancelarPlano(numeroPlano);
         }
       );
       break;
@@ -222,29 +304,11 @@ function handleChoice(choice) {
       rl.close();
       break;
     default:
-      console.log("Opção inválida!");
-      showMenu(); // Exibe o menu novamente após uma opção inválida
+      console.log("Opção inválida. Por favor, escolha uma opção válida.");
+      showMenu();
   }
 }
 
-// Função para mostrar o menu
-function showMenu() {
-  console.log("\nMenu:");
-  console.log("1. Exibir voos disponíveis");
-  console.log(
-    "2. Verificar altitudes livres em uma aerovia em um determinado horário"
-  );
-  console.log("3. Submeter Plano de Voo");
-  console.log("4. Listar Plano de Voo por Número");
-  console.log("5. Listar Planos de Voo para uma determinada Data");
-  console.log("6. Listar Ocupação de uma Aerovia em uma determinada Data");
-  console.log("7. Cancelar Plano de Voo");
-  console.log("8. Encerrar o Sistema");
-
-  rl.question("Digite a opção desejada:", (answer) => {
-    handleChoice(answer.trim());
-  });
-}
-
-// Chamar a função para mostrar o menu
+// Iniciar o sistema
+console.log("Bem-vindo ao Sistema de Gerenciamento de Voos.");
 showMenu();
